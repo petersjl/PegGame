@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using UnityEngine;
+using static UnityEngine.Rendering.DebugUI.Table;
 
 public class BoardController : MonoBehaviour
 {
@@ -129,6 +131,7 @@ public class BoardController : MonoBehaviour
         destination.IsOccupied = true;
         destination.IsHighlighted = false;
         Board[jumpRow][jumpCol].IsOccupied = false;
+        CheckState();
     }
 
     private void HighlightOptions()
@@ -142,5 +145,26 @@ public class BoardController : MonoBehaviour
         if (IsBoardOpenAt(col + 2, row) && !IsBoardOpenAt(col + 1, row)) Board[row][col + 2].IsHighlighted = true; // check right
         if (IsBoardOpenAt(col + 2, row - 2) && !IsBoardOpenAt(col + 1, row - 1)) Board[row - 2][col + 2].IsHighlighted = true; // check right diag
         if (IsBoardOpenAt(col - 2, row + 2) && !IsBoardOpenAt(col - 1, row + 1)) Board[row + 2][col - 2].IsHighlighted = true; // check left diag
+    }
+
+    private bool HasMove(Peg p)
+    {
+        var row = p.row;
+        var col = p.col;
+
+        if (IsBoardOpenAt(col, row - 2) && !IsBoardOpenAt(col, row - 1)) return true; // check up
+        if (IsBoardOpenAt(col, row + 2) && !IsBoardOpenAt(col, row + 1)) return true; // check down
+        if (IsBoardOpenAt(col - 2, row) && !IsBoardOpenAt(col - 1, row)) return true; // check left
+        if (IsBoardOpenAt(col + 2, row) && !IsBoardOpenAt(col + 1, row)) return true; // check right
+        if (IsBoardOpenAt(col + 2, row - 2) && !IsBoardOpenAt(col + 1, row - 1)) return true; // check right diag
+        if (IsBoardOpenAt(col - 2, row + 2) && !IsBoardOpenAt(col - 1, row + 1)) return true; // check left diag
+        return false;
+    }
+
+    private void CheckState()
+    {
+        var available = _Pegs.Where(peg => peg.IsOccupied == true);
+        if (available.Count() == 1) Debug.Log("Game Won");
+        else if (!available.Where(peg => HasMove(peg)).Any()) Debug.Log("Game lost");
     }
 }

@@ -48,10 +48,12 @@ public class Peg : MonoBehaviour
     private void Start()
     {
         _renderer = GetComponent<SpriteRenderer>();
+        UpdateColor();
     }
 
     private void UpdateColor()
     {
+        if (_renderer == null) return;
         if (_isSelected) _renderer.color = SelectedColor;
         else if(_isHighlighted) _renderer.color = HighLightedColor;
         else if(_isOccupied) _renderer.color = OccupiedColor;

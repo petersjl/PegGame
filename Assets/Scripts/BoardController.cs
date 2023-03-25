@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using UnityEngine;
 
 public class BoardController : MonoBehaviour
@@ -8,6 +9,7 @@ public class BoardController : MonoBehaviour
     public GameObject Background;
     public int BoardSize;
     public List<List<Peg>> Board;
+    public Point StartingHole;
 
 
     private List<Peg> _Pegs;
@@ -40,10 +42,12 @@ public class BoardController : MonoBehaviour
             ClearStatuses();
             SelectedPeg = peg;
             SelectedPeg.IsSelected = true;
+            HighlightOptions();
         }
         else if(peg.IsHighlighted)
         {
             MovePeg(peg);
+            ClearStatuses();
         }
     }
 
@@ -53,7 +57,7 @@ public class BoardController : MonoBehaviour
         _Pegs= new List<Peg>();
         foreach(Transform child in transform)
         {
-            GameObject.Destroy(child.gameObject);
+            Destroy(child.gameObject);
         }
 
         var sideLength = (BoardSize - 1) * PegDist;
@@ -83,6 +87,19 @@ public class BoardController : MonoBehaviour
             }
             Board.Add(row);
         }
+        if(StartingHole != null)
+        {
+            if(StartingHole.Y >= 0 && StartingHole.Y < Board.Count)
+            {
+                var row = Board[StartingHole.Y];
+                if(StartingHole.X >= 0 && StartingHole.X < row.Count)
+                {
+                    row[StartingHole.X].IsOccupied = false;
+                    return;
+                }
+            }
+        }
+        Board[0][0].IsOccupied = false;
     }
 
     private bool IsBoardOpenAt(int x, int y)
@@ -104,7 +121,26 @@ public class BoardController : MonoBehaviour
 
     private void MovePeg(Peg destination)
     {
+        Debug.Log($"Moving {SelectedPeg.row}, {SelectedPeg.col} to {destination.row}, {destination.col}");
+        var jumpRow = (destination.row - SelectedPeg.row) / 2 + SelectedPeg.row;
+        var jumpCol = (destination.col - SelectedPeg.col) / 2 + SelectedPeg.col;
 
+        SelectedPeg.IsOccupied = false;
+        destination.IsOccupied = true;
+        destination.IsHighlighted = false;
+        Board[jumpRow][jumpCol].IsOccupied = false;
     }
 
+    private void HighlightOptions()
+    {
+        var row = SelectedPeg.row;
+        var col = SelectedPeg.col;
+
+        if (IsBoardOpenAt(col, row - 2) && !IsBoardOpenAt(col, row - 1)) Board[row - 2][col].IsHighlighted = true; // check up
+        if (IsBoardOpenAt(col, row + 2) && !IsBoardOpenAt(col, row + 1)) Board[row + 2][col].IsHighlighted = true; // check down
+        if (IsBoardOpenAt(col - 2, row) && !IsBoardOpenAt(col - 1, row)) Board[row][col - 2].IsHighlighted = true; // check left
+        if (IsBoardOpenAt(col + 2, row) && !IsBoardOpenAt(col + 1, row)) Board[row][col + 2].IsHighlighted = true; // check right
+        if (IsBoardOpenAt(col + 2, row - 2) && !IsBoardOpenAt(col + 1, row - 1)) Board[row - 2][col + 2].IsHighlighted = true; // check right diag
+        if (IsBoardOpenAt(col - 2, row + 2) && !IsBoardOpenAt(col - 1, row + 1)) Board[row + 2][col - 2].IsHighlighted = true; // check left diag
+    }
 }

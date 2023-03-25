@@ -123,7 +123,6 @@ public class BoardController : MonoBehaviour
 
     private void MovePeg(Peg destination)
     {
-        Debug.Log($"Moving {SelectedPeg.row}, {SelectedPeg.col} to {destination.row}, {destination.col}");
         var jumpRow = (destination.row - SelectedPeg.row) / 2 + SelectedPeg.row;
         var jumpCol = (destination.col - SelectedPeg.col) / 2 + SelectedPeg.col;
 
